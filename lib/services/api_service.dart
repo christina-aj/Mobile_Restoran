@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class ApiService {
   static const String baseUrl = 'http://192.168.1.250:8000/api/v1';
 
@@ -27,129 +28,36 @@ class ApiService {
     }
   }
 
-  // ===== MULTIPART UPLOAD METHODS =====
 
-  /// Create barang dengan foto (multipart)
-  Future<dynamic> createBarangWithImage(Map<String, dynamic> data, File? imageFile) async {
-    await _ensureInitialized();
 
+
+  // ===== AUTH (LOGIN REGISTER)=====
+  Future<Map<String, dynamic>> register(Map<String, dynamic> data) async {
     try {
-      print('Creating barang with image: $data');
-      print('Image file: ${imageFile?.path}');
+      print('Attempting registration: $data');
 
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/barang/create'),
+      final response = await http.post(
+        Uri.parse('$baseUrl/user/register-tenant'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
       );
 
-      // Add headers
-      request.headers['Authorization'] = 'Bearer $_token';
-
-      // Add text fields
-      request.fields['nama_barang'] = data['nama_barang'].toString();
-      request.fields['harga_default'] = data['harga_default'].toString();
-
-      if (data['deskripsi'] != null) {
-        request.fields['deskripsi'] = data['deskripsi'].toString();
-      }
-
-      if (data['id_kategori'] != null) {
-        request.fields['id_kategori'] = data['id_kategori'].toString();
-      }
-
-      // Add image file if exists
-      if (imageFile != null) {
-        var stream = http.ByteStream(imageFile.openRead());
-        var length = await imageFile.length();
-        var multipartFile = http.MultipartFile(
-          'foto', // field name sesuai API backend
-          stream,
-          length,
-          filename: imageFile.path.split('/').last,
-        );
-        request.files.add(multipartFile);
-        print('Image added to request: ${imageFile.path}');
-      }
-
-      print('Sending multipart request...');
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-
-      print('Create Status: ${response.statusCode}');
-      print('Create Body: $responseBody');
+      print('Register Response Status: ${response.statusCode}');
+      print('Register Response Body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(responseBody);
+        final responseData = json.decode(response.body);
+        print('Registration success');
+        return responseData;
       }
 
-      throw Exception('Gagal tambah barang: $responseBody');
+      throw Exception('Registrasi gagal: ${response.body}');
     } catch (e) {
-      print('Error creating barang with image: $e');
-      rethrow;
+      print('Registration error: $e');
+      throw Exception('Registrasi gagal: $e');
     }
   }
 
-  /// Update barang dengan foto (multipart)
-  Future<dynamic> updateBarangWithImage(String id, Map<String, dynamic> data, File? imageFile) async {
-    await _ensureInitialized();
-
-    try {
-      print('Updating barang $id with image: $data');
-      print('Image file: ${imageFile?.path}');
-
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/barang/update/$id'),
-      );
-
-      // Add headers
-      request.headers['Authorization'] = 'Bearer $_token';
-
-      // Add text fields
-      request.fields['nama_barang'] = data['nama_barang'].toString();
-      request.fields['harga_default'] = data['harga_default'].toString();
-
-      if (data['deskripsi'] != null) {
-        request.fields['deskripsi'] = data['deskripsi'].toString();
-      }
-
-      if (data['id_kategori'] != null) {
-        request.fields['id_kategori'] = data['id_kategori'].toString();
-      }
-
-      // Add image file if exists
-      if (imageFile != null) {
-        var stream = http.ByteStream(imageFile.openRead());
-        var length = await imageFile.length();
-        var multipartFile = http.MultipartFile(
-          'foto', // field name sesuai API backend
-          stream,
-          length,
-          filename: imageFile.path.split('/').last,
-        );
-        request.files.add(multipartFile);
-        print('Image added to request: ${imageFile.path}');
-      }
-
-      print('Sending multipart request...');
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-
-      print('Update Status: ${response.statusCode}');
-      print('Update Body: $responseBody');
-
-      if (response.statusCode == 200) {
-        return json.decode(responseBody);
-      }
-
-      throw Exception('Gagal update barang: $responseBody');
-    } catch (e) {
-      print('Error updating barang with image: $e');
-      rethrow;
-    }
-  }
-
-  // ===== AUTH =====
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       print('Attempting login for: $email');
@@ -230,6 +138,10 @@ class ApiService {
     }
   }
 
+
+
+
+
   // ===== MASTER TENANT =====
   Future<Map<String, dynamic>> getTenantById(String tenantId) async {
     await _ensureInitialized();
@@ -276,6 +188,10 @@ class ApiService {
       rethrow;
     }
   }
+
+
+
+
 
   // ===== KASIR MANAGEMENT =====
   Future<List<dynamic>> getKasirByTenant() async {
@@ -437,6 +353,11 @@ class ApiService {
     }
   }
 
+
+
+
+
+
   // ===== MASTER KATEGORI =====
   Future<List<dynamic>> getKategoriIndex() async {
     await _ensureInitialized();
@@ -555,6 +476,10 @@ class ApiService {
       rethrow;
     }
   }
+
+
+
+
 
   // ===== MASTER BARANG =====
   Future<List<dynamic>> getBarangByTenant() async {
@@ -722,96 +647,132 @@ class ApiService {
     }
   }
 
-  // ===== DETAIL BARANG =====
-  Future<List<dynamic>> getDetailBarangGlobal() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/Detail_Barang/DetailBarangGlobal'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] ?? [];
-      }
-      throw Exception('Gagal load detail barang');
-    } catch (e) {
-      rethrow;
-    }
-  }
 
-  Future<List<dynamic>> getDetailBarangByTenant() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/Detail_Barang/DetailBarangbytenant'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] ?? [];
-      }
-      throw Exception('Gagal load detail barang');
-    } catch (e) {
-      rethrow;
-    }
-  }
 
-  Future<dynamic> createDetailBarang(Map<String, dynamic> data) async {
+  // ===== MULTIPART UPLOAD METHODS =====
+
+  /// Create barang dengan foto (multipart)
+  Future<dynamic> createBarangWithImage(Map<String, dynamic> data, File? imageFile) async {
+    await _ensureInitialized();
+
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/Detail_Barang/CreateDetailBarang'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-        body: json.encode(data),
+      print('Creating barang with image: $data');
+      print('Image file: ${imageFile?.path}');
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/barang/create'),
       );
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $_token';
+
+      // Add text fields
+      request.fields['nama_barang'] = data['nama_barang'].toString();
+      request.fields['harga_default'] = data['harga_default'].toString();
+
+      if (data['deskripsi'] != null) {
+        request.fields['deskripsi'] = data['deskripsi'].toString();
+      }
+
+      if (data['id_kategori'] != null) {
+        request.fields['id_kategori'] = data['id_kategori'].toString();
+      }
+
+      // Add image file if exists
+      if (imageFile != null) {
+        var stream = http.ByteStream(imageFile.openRead());
+        var length = await imageFile.length();
+        var multipartFile = http.MultipartFile(
+          'foto', // field name sesuai API backend
+          stream,
+          length,
+          filename: imageFile.path.split('/').last,
+        );
+        request.files.add(multipartFile);
+        print('Image added to request: ${imageFile.path}');
+      }
+
+      print('Sending multipart request...');
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      print('Create Status: ${response.statusCode}');
+      print('Create Body: $responseBody');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(response.body);
+        return json.decode(responseBody);
       }
-      throw Exception('Gagal tambah detail barang');
+
+      throw Exception('Gagal tambah barang: $responseBody');
     } catch (e) {
+      print('Error creating barang with image: $e');
       rethrow;
     }
   }
 
-  Future<dynamic> updateDetailBarang(String id, Map<String, dynamic> data) async {
+  /// Update barang dengan foto (multipart)
+  Future<dynamic> updateBarangWithImage(String id, Map<String, dynamic> data, File? imageFile) async {
+    await _ensureInitialized();
+
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/Detail_Barang/UpdateDetailBarang/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-        body: json.encode(data),
+      print('Updating barang $id with image: $data');
+      print('Image file: ${imageFile?.path}');
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/barang/update/$id'),
       );
-      if (response.statusCode == 200) return json.decode(response.body);
-      throw Exception('Gagal update detail barang');
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $_token';
+
+      // Add text fields
+      request.fields['nama_barang'] = data['nama_barang'].toString();
+      request.fields['harga_default'] = data['harga_default'].toString();
+
+      if (data['deskripsi'] != null) {
+        request.fields['deskripsi'] = data['deskripsi'].toString();
+      }
+
+      if (data['id_kategori'] != null) {
+        request.fields['id_kategori'] = data['id_kategori'].toString();
+      }
+
+      // Add image file if exists
+      if (imageFile != null) {
+        var stream = http.ByteStream(imageFile.openRead());
+        var length = await imageFile.length();
+        var multipartFile = http.MultipartFile(
+          'foto', // field name sesuai API backend
+          stream,
+          length,
+          filename: imageFile.path.split('/').last,
+        );
+        request.files.add(multipartFile);
+        print('Image added to request: ${imageFile.path}');
+      }
+
+      print('Sending multipart request...');
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      print('Update Status: ${response.statusCode}');
+      print('Update Body: $responseBody');
+
+      if (response.statusCode == 200) {
+        return json.decode(responseBody);
+      }
+
+      throw Exception('Gagal update barang: $responseBody');
     } catch (e) {
+      print('Error updating barang with image: $e');
       rethrow;
     }
   }
 
-  Future<dynamic> deleteDetailBarang(String id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/Detail_Barang/DeleteDetailBarang/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-      );
-      if (response.statusCode == 200) return json.decode(response.body);
-      throw Exception('Gagal hapus detail barang');
-    } catch (e) {
-      rethrow;
-    }
-  }
+
+
 
   // ===== TRANSAKSI =====
   Future<List<dynamic>> getTransaksiByTenant() async {
@@ -954,6 +915,9 @@ class ApiService {
       rethrow;
     }
   }
+
+
+
 
 
   // HELPER

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:resto_app/screens/tenant/history_pesanan.dart';
-import '../screens/tenant/home_resto.dart';
-import '../screens/tenant/daftar_kasir.dart';
-import '../screens/tenant/profile_tenant.dart';
+import '../screens/tenant/history_pesanan.dart';
+import 'tenant/home_resto.dart';
+import 'tenant/daftar_kasir.dart';
+import 'tenant/profile_tenant.dart';
 import '../services/api_service.dart';
 
 class CustomBottomNav extends StatelessWidget {

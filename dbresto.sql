@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `master_barang` (
   CONSTRAINT `master_barang_id_tenant_foreign` FOREIGN KEY (`id_tenant`) REFERENCES `master_tenant` (`id_tenant`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.master_barang: ~5 rows (approximately)
+-- Dumping data for table dbresto.master_barang: ~4 rows (approximately)
 DELETE FROM `master_barang`;
 INSERT INTO `master_barang` (`id_barang`, `id_tenant`, `id_satuan`, `id_kategori`, `kode_barang`, `nama_barang`, `deskripsi`, `foto`, `harga_default`, `created_at`, `updated_at`) VALUES
 	(1, 1, NULL, 13, 'B1', 'bakso urat', NULL, 'barang/qRcEY1CPSiBGK7DSDx6sbSZdzcPkt1MiqeDHGECT.jpg', 10000.00, NULL, '2025-12-10 01:22:12'),
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `master_kategori` (
   CONSTRAINT `master_kategori_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.master_kategori: ~1 rows (approximately)
+-- Dumping data for table dbresto.master_kategori: ~2 rows (approximately)
 DELETE FROM `master_kategori`;
 INSERT INTO `master_kategori` (`id_kategori`, `user_id`, `kode_kategori`, `nama_kategori`, `keterangan`, `created_at`, `updated_at`) VALUES
 	(13, 2, 'KTG0001', 'Makanan', NULL, '2025-12-09 23:42:08', '2025-12-10 00:11:56'),
@@ -144,12 +144,13 @@ CREATE TABLE IF NOT EXISTS `master_tenant` (
   UNIQUE KEY `master_tenant_kode_tenant_unique` (`kode_tenant`),
   KEY `master_tenant_created_by_foreign` (`created_by`),
   CONSTRAINT `master_tenant_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.master_tenant: ~1 rows (approximately)
+-- Dumping data for table dbresto.master_tenant: ~0 rows (approximately)
 DELETE FROM `master_tenant`;
 INSERT INTO `master_tenant` (`id_tenant`, `created_by`, `kode_tenant`, `nama_tenant`, `lokasi`, `notelp`, `created_at`, `updated_at`) VALUES
-	(1, 1, 'T1', 'Bakso Ali', 'Jalan Sudirman', '08123456789', NULL, NULL);
+	(1, 1, 'T1', 'Bakso Ali', 'Jalan Sudirman', '08123456789', NULL, NULL),
+	(2, 5, 'T-0002', 'Penyetan Yumiati', 'Foodcourt Lantai 2 No 1', '0852030394887', '2025-12-10 05:30:30', '2025-12-10 05:30:32');
 
 -- Dumping structure for table dbresto.master_transaksi
 CREATE TABLE IF NOT EXISTS `master_transaksi` (
@@ -223,7 +224,7 @@ CREATE TABLE IF NOT EXISTS `oauth_access_tokens` (
   KEY `oauth_access_tokens_user_id_index` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.oauth_access_tokens: ~30 rows (approximately)
+-- Dumping data for table dbresto.oauth_access_tokens: ~86 rows (approximately)
 DELETE FROM `oauth_access_tokens`;
 INSERT INTO `oauth_access_tokens` (`id`, `user_id`, `client_id`, `name`, `scopes`, `revoked`, `created_at`, `updated_at`, `expires_at`) VALUES
 	('00b91ce31167f8d30dcad199ed1978ee0b96aa9e4f8364a2ddf1dc00d1d6fac6236ac4b1cd3b33b8', 2, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-09 23:09:24', '2025-12-09 23:09:24', '2025-12-10 08:09:24'),
@@ -240,6 +241,7 @@ INSERT INTO `oauth_access_tokens` (`id`, `user_id`, `client_id`, `name`, `scopes
 	('137e42c57c296f7c4d6e97808dae088acc596fb6c9fd5b340af40183012b20b204f070ba565876e7', 2, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-09 06:54:16', '2025-12-09 06:54:16', '2025-12-09 15:54:16'),
 	('14773435d9da440cbcec617222d667e5eb320fbcc151d0348e1695d45244db0c02fe7e08bbab1454', 2, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-08 14:37:29', '2025-12-08 14:37:29', '2025-12-08 23:37:29'),
 	('16f2f389384ae53e76981d63519bd25eca27992f4502c672d3d00a4788a346278c1bc4158e53590c', 2, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-08 15:50:39', '2025-12-08 15:50:39', '2025-12-09 00:50:39'),
+	('2329e7e944c14c037d04dd0c9b21db80fea7ff112aeb883b97b922a9d53baec1c79f23dc0aa01b29', 5, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-10 05:30:56', '2025-12-10 05:30:58', '2025-12-10 14:30:58'),
 	('29387153ee41994bc3d4abc40c97f5969b851acf65ce3947e840053919de31b2359bc6c3d4226164', 3, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-09 16:42:33', '2025-12-09 16:42:34', '2025-12-10 01:42:34'),
 	('29b0062cbb4dc81595f1ca70f8ee2c43fc85c142d257219f4d2aa662b5505702c1816b46d16d8773', 3, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-09 16:37:50', '2025-12-09 16:37:50', '2025-12-10 01:37:50'),
 	('304bca79aa011bf9afeea27ec34a451b15c1612bf7f7fb8808ba54d231fe21b1b466ed64e5ee64a0', 2, '019afd42-cb00-7235-84ed-1013fdae29a7', 'authToken', '[]', 0, '2025-12-08 15:16:43', '2025-12-08 15:16:43', '2025-12-09 00:16:43'),
@@ -396,9 +398,11 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   KEY `sessions_last_activity_index` (`last_activity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.sessions: ~6 rows (approximately)
+-- Dumping data for table dbresto.sessions: ~1 rows (approximately)
 DELETE FROM `sessions`;
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+	('3lf6SS4Tjorg69j0vubd2YEadKzH19jK3ZUqMbqC', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTDdUUEE0ZjlHQkJkdGU5OEVKdU9ibG9hcW5wYzhsR3dFbmIzSXRjNyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1765368898),
+	('7vvHSHp3rIvHq8tyem8G5VjeX3xgI5yumAblv0aF', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTnVEU3ozbnpwd1VUQ3B0ekZoTzZrYzJOZEJGa2NtR2J4bXhCMlRjZiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1765368899),
 	('cMGP0WplecMKY9jUgHGoQaNGyiPoM7pv9Gbhw8bR', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidWg3UVVYSzFRZ2xjOHRrRFBLOGVXNERjZWFXbmxpeWpFSExNNXlmQyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1765348293),
 	('wvn7BAiRLahsliWTNdZUTPoMs64TfjEcds4gc0G5', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQWhVb1lVVkNvbEIwVjRkNXU4dXJhR2RHWE1KZVdiNlFyR3huMHVCciI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1765323026);
 
@@ -421,14 +425,15 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `users_email_unique` (`email`),
   KEY `users_id_tenant_foreign` (`id_tenant`),
   CONSTRAINT `users_id_tenant_foreign` FOREIGN KEY (`id_tenant`) REFERENCES `master_tenant` (`id_tenant`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dbresto.users: ~3 rows (approximately)
+-- Dumping data for table dbresto.users: ~4 rows (approximately)
 DELETE FROM `users`;
 INSERT INTO `users` (`user_id`, `notelfon`, `email`, `nama`, `role`, `id_tenant`, `lokasi`, `password`, `tanggal_masuk`, `profile`, `remember_token`, `created_at`, `updated_at`) VALUES
 	(1, '08123456789', 'admin@example.com', 'Admin', 'admin', NULL, 'Head Office', '$2y$12$mkfwV2eLnGKlROTqhKIUcujkRNcZu8HZwOzPZcAUgvZxFpCEv5WpK', '2024-01-01', NULL, NULL, '2025-12-08 02:16:35', '2025-12-08 02:16:35'),
 	(2, '08123456789', 'admin123@example.com', 'Pak Ali', 'tenant', 1, 'Head Office', '$2y$12$BX9UlQTCXnqNcmLiSRpbbeH7Jk49uERmBiIl93TZZD0O94InFaYI.', '2024-01-01', NULL, NULL, '2025-12-08 02:16:35', '2025-12-08 02:16:35'),
-	(3, '08765656688', 'kasir1@example.com', 'Kasir1', 'kasir', 1, NULL, '$2y$10$ru2QZu8swdDWDVeK2oHmcO52OEwki0uYJu45uUVTUEw7jjS1UY9lW', NULL, NULL, NULL, NULL, NULL);
+	(3, '08765656688', 'kasir1@example.com', 'Kasir1', 'kasir', 1, NULL, '$2y$10$ru2QZu8swdDWDVeK2oHmcO52OEwki0uYJu45uUVTUEw7jjS1UY9lW', NULL, NULL, NULL, NULL, NULL),
+	(5, NULL, 'yumiati@example.com', 'Yumiati', 'tenant', 2, NULL, '$2y$12$65.o5BD8ENvtotoRdQYGbOoKyE13B7T58qrSBKhj64t.K5KcTcYNK', NULL, NULL, NULL, '2025-12-10 05:30:32', '2025-12-10 05:30:32');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

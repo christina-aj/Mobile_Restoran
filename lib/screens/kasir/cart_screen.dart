@@ -67,7 +67,7 @@ class _CartScreenState extends State<CartScreen> {
       // Jika sukses, clear cart dan kembali
       if (mounted) {
         // Extract kode transaksi dari berbagai kemungkinan struktur response
-        String kodeTransaksi = 'N/A';
+        String kodeTransaksi = '-';
 
         try {
           // Coba ambil dari data.transaksi.kode_transaksi

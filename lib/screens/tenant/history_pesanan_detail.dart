@@ -164,7 +164,7 @@ class _HistoryPesananDetailState extends State<HistoryPesananDetail> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.order['kode_transaksi'] ?? 'N/A',
+                  widget.order['kode_transaksi'] ?? '-',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

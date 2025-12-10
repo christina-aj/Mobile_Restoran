@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/kasir/home_kasir.dart';
-import '../screens/kasir/cart_screen.dart';
-import '../screens/kasir/order_list_screen.dart';
+import 'kasir/cart_screen.dart';
+import 'kasir/order_list_screen.dart';
 import '../services/api_service.dart';
 
 class CustomBottomNavKasir extends StatelessWidget {

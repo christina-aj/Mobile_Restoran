@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class Helpers {
   static String formatRupiah(dynamic harga) {
     final angka = double.tryParse(harga.toString()) ?? 0;

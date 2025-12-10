@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../bottom_navigation_kasir.dart';
-import '../login/login_screen.dart';
+import '../auth/login_screen.dart';
 import 'cart_screen.dart';
 
 class HomeKasirScreen extends StatefulWidget {
@@ -58,7 +58,7 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
         final tenantInfo = await widget.apiService.getTenantById(_tenantId!);
         if (mounted) {
           setState(() {
-            _tenantName = tenantInfo['nama_tenant'] ?? 'N/A';
+            _tenantName = tenantInfo['nama_tenant'] ?? '-';
           });
         }
       } else {

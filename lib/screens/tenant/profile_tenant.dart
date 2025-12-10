@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../bottom_navigation.dart';
-import '../login/login_screen.dart'; // Sesuaikan path ini dengan struktur project Anda
+import '../auth/login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileTenantScreen extends StatefulWidget {
@@ -284,7 +284,7 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
               // Nama Tenant
               Text(
-                _tenantInfo?['nama_tenant'] ?? 'N/A',
+                _tenantInfo?['nama_tenant'] ?? '-',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -294,7 +294,7 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
               // Kode Tenant
               Text(
-                _tenantInfo?['kode_tenant'] ?? 'N/A',
+                _tenantInfo?['kode_tenant'] ?? '-',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
@@ -317,13 +317,13 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                     _buildInfoRow(
                       icon: Icons.location_on_outlined,
                       label: 'Lokasi',
-                      value: _tenantInfo?['lokasi'] ?? 'N/A',
+                      value: _tenantInfo?['lokasi'] ?? '-',
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       icon: Icons.phone_outlined,
                       label: 'No Telepon Resto',
-                      value: _tenantInfo?['notelp'] ?? 'N/A',
+                      value: _tenantInfo?['notelp'] ?? '-',
                     ),
                   ],
                 ),
@@ -354,25 +354,25 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                     _buildInfoRow(
                       icon: Icons.person_outline,
                       label: 'Nama',
-                      value: _userInfo?['nama'] ?? _userInfo?['name'] ?? 'N/A',
+                      value: _userInfo?['nama'] ?? _userInfo?['name'] ?? '-',
                     ),
                     const Divider(height: 24),
                     _buildInfoRow(
                       icon: Icons.email_outlined,
                       label: 'Email',
-                      value: _userInfo?['email'] ?? 'N/A',
+                      value: _userInfo?['email'] ?? '-',
                     ),
                     const Divider(height: 24),
                     _buildInfoRow(
                       icon: Icons.badge_outlined,
                       label: 'Role',
-                      value: (_userInfo?['role'] ?? 'N/A').toString().toUpperCase(),
+                      value: (_userInfo?['role'] ?? '-').toString().toUpperCase(),
                     ),
                     const Divider(height: 24),
                     _buildInfoRow(
                       icon: Icons.phone_outlined,
                       label: 'No Telepon',
-                      value: _userInfo?['notelfon'] ?? 'N/A',
+                      value: _userInfo?['notelfon'] ?? '-',
                     ),
                   ],
                 ),

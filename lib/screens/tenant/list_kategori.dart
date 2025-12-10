@@ -475,7 +475,7 @@ class _ListKategoriScreenState extends State<ListKategoriScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  category['kode_kategori'] ?? 'N/A',
+                                  category['kode_kategori'] ?? '-',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -484,7 +484,7 @@ class _ListKategoriScreenState extends State<ListKategoriScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  category['nama_kategori'] ?? 'N/A',
+                                  category['nama_kategori'] ?? '-',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,

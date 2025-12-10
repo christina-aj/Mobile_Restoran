@@ -281,7 +281,7 @@ class _HistoryPesananScreenState extends State<HistoryPesananScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      order['kode_transaksi'] ?? 'N/A',
+                                      order['kode_transaksi'] ?? '-',
                                       style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,

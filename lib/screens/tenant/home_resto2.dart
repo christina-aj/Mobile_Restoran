@@ -69,15 +69,15 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
 
         if (mounted) {
           setState(() {
-            _tenantName = tenantInfo['nama_tenant'] ?? 'N/A';
-            _tenantLocation = tenantInfo['lokasi'] ?? 'N/A';
+            _tenantName = tenantInfo['nama_tenant'] ?? '-';
+            _tenantLocation = tenantInfo['lokasi'] ?? '-';
           });
         }
       } else {
         if (mounted) {
           setState(() {
             _tenantName = 'Tenant';
-            _tenantLocation = 'N/A';
+            _tenantLocation = '-';
           });
         }
       }
