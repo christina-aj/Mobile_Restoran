@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../tenant/home_resto.dart';
+import '../kasir/home_kasir.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -37,36 +38,81 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       print('Starting login process...');
 
-      final result = await _apiService.login(
+      // Step 1: Login untuk mendapatkan token
+      final loginResult = await _apiService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      print('Login successful: $result');
+      print('Login successful, token received');
 
       if (!mounted) return;
 
-      // Tampilkan success message
+      // Step 2: Ambil user info untuk mendapatkan role
+      print('Fetching user info...');
+      final userInfo = await _apiService.getUserInfo();
+
+      print('User info received: $userInfo');
+
+      if (!mounted) return;
+
+      // Ambil role dari userInfo
+      final role = userInfo['role']?.toString().toLowerCase().trim() ?? '';
+      final userName = userInfo['nama']?.toString() ?? userInfo['name']?.toString() ?? userInfo['email']?.toString() ?? 'User';
+      final idTenant = userInfo['id_tenant']?.toString() ?? '';
+
+      print('=== DEBUG LOGIN ===');
+      print('User role from API: "$role"');
+      print('User name: $userName');
+      print('ID Tenant: $idTenant');
+      print('Role type: ${userInfo['role'].runtimeType}');
+      print('==================');
+
+      // Validasi role tidak kosong
+      if (role.isEmpty) {
+        throw Exception('Role tidak ditemukan dalam response');
+      }
+
+      // Tampilkan success message dengan role info
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login berhasil!'),
+        SnackBar(
+          content: Text('Login berhasil sebagai $role! Selamat datang $userName'),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
 
-      // Navigate ke home screen dengan delay
+      // Delay sebentar
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (!mounted) return;
 
-      // Navigate dengan replacement
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeRestoScreen(apiService: _apiService),
-        ),
-      );
+      // Navigate berdasarkan role dengan pengecekan yang lebih spesifik
+      print('Checking role for navigation: "$role"');
+
+      if (role == 'kasir') {
+        // Role Kasir -> ke HomeKasirScreen
+        print('Navigating to HomeKasirScreen');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeKasirScreen(apiService: _apiService),
+          ),
+        );
+      } else if (role == 'tenant' || role == 'resto' || role == 'owner') {
+        // Role Tenant -> ke HomeRestoScreen
+        print('Navigating to HomeRestoScreen');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeRestoScreen(apiService: _apiService),
+          ),
+        );
+      } else {
+        // Role tidak dikenali
+        print('WARNING: Unknown role: "$role"');
+        throw Exception('Role "$role" tidak dikenali. Hubungi administrator.');
+      }
 
     } catch (e) {
       print('Login failed: $e');
@@ -221,9 +267,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password tidak boleh kosong';
-                    }
-                    if (value.length < 6) {
-                      return 'Password minimal 6 karakter';
                     }
                     return null;
                   },

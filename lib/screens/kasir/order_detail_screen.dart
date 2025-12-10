@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
-import '../bottom_navigation.dart';
+import '../bottom_navigation_kasir.dart';
 
-class HistoryPesananDetail extends StatefulWidget {
+class OrderDetailScreen extends StatefulWidget {
   final ApiService apiService;
   final Map<String, dynamic> order;
 
-  const HistoryPesananDetail({
+  const OrderDetailScreen({
     Key? key,
     required this.apiService,
     required this.order,
   }) : super(key: key);
 
   @override
-  State<HistoryPesananDetail> createState() => _HistoryPesananDetailState();
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
-class _HistoryPesananDetailState extends State<HistoryPesananDetail> {
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
   List<dynamic> _detailItems = [];
   bool _isLoading = false;
   String _errorMessage = '';
@@ -475,8 +475,8 @@ class _HistoryPesananDetailState extends State<HistoryPesananDetail> {
           ),
         ],
       ),
-      bottomNavigationBar: CustomBottomNav(
-        currentIndex: 1,
+      bottomNavigationBar: CustomBottomNavKasir(
+        currentIndex: 2,
         apiService: widget.apiService,
       ),
     );

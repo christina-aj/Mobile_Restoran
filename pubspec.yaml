@@ -35,6 +35,8 @@ dependencies:
   shared_preferences: ^2.2.2  # Untuk simpan token/data lokal
   crypto: ^3.0.3 # untuk hash password
   url_launcher: ^6.2.0 # buat url ke email / wa
+  image_picker: ^1.0.7  # Pilih foto dari galeri/kamera
+  path: ^1.8.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

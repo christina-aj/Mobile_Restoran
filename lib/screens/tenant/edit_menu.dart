@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 
 class EditMenuScreen extends StatefulWidget {
@@ -20,11 +22,14 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   late final TextEditingController _namaController;
   late final TextEditingController _hargaController;
   late final TextEditingController _deskripsiController;
+  final ImagePicker _picker = ImagePicker();
 
   String? _selectedKategori;
   bool _isLoading = false;
   bool _isLoadingKategori = true;
   List<dynamic> _kategoriList = [];
+  File? _selectedImage;
+  String? _existingImageUrl;
 
   @override
   void initState() {
@@ -40,13 +45,15 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
         text: widget.barangData['deskripsi'] ?? ''
     );
 
+    // Set existing image URL if available
+    _existingImageUrl = widget.barangData['foto'];
+
     // Set kategori yang sudah ada
     final kategoriId = widget.barangData['id_kategori'];
     if (kategoriId != null) {
       _selectedKategori = kategoriId.toString();
     }
 
-    // Load kategori dari API
     _loadKategori();
   }
 
@@ -83,6 +90,157 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     }
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto berhasil dipilih'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memilih foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto berhasil diambil'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error taking photo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengambil foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Pilih Sumber Foto',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                title: const Text('Kamera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImageFromCamera();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.blue),
+                title: const Text('Galeri'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+              ),
+              if (_selectedImage != null || _existingImageUrl != null)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Hapus Foto'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _selectedImage = null;
+                      _existingImageUrl = null;
+                    });
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreview() {
+    if (_selectedImage != null) {
+      return Image.file(
+        _selectedImage!,
+        fit: BoxFit.cover,
+      );
+    } else if (_existingImageUrl != null && _existingImageUrl!.isNotEmpty) {
+      return Image.network(
+        _existingImageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.restaurant, size: 60, color: Colors.grey);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      );
+    } else {
+      return const Icon(Icons.restaurant, size: 60, color: Colors.grey);
+    }
+  }
+
   Future<void> _handleUpdateMenu() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -105,14 +263,22 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
       };
 
       print('Updating menu $id with data: $data');
+      print('Selected image: ${_selectedImage?.path}');
 
-      await widget.apiService.updateBarang(id, data);
+      // Gunakan method dengan multipart jika ada foto baru
+      if (_selectedImage != null) {
+        await widget.apiService.updateBarangWithImage(id, data, _selectedImage);
+      } else {
+        await widget.apiService.updateBarang(id, data);
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Menu berhasil diupdate'),
+        SnackBar(
+          content: Text(_selectedImage != null
+              ? 'Menu berhasil diupdate dengan foto baru'
+              : 'Menu berhasil diupdate'),
           backgroundColor: Colors.green,
         ),
       );
@@ -235,27 +401,28 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
           key: _formKey,
           child: Column(
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.restaurant, size: 60),
+              GestureDetector(
+                onTap: _isLoading ? null : _showImageSourceDialog,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: (_selectedImage != null || _existingImageUrl != null)
+                          ? Colors.blue
+                          : Colors.grey.shade300,
+                      width: 2,
                     ),
                   ),
-                ],
+                  child: ClipOval(
+                    child: _buildImagePreview(),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _isLoading ? null : () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur upload foto belum tersedia')),
-                  );
-                },
+              ElevatedButton.icon(
+                onPressed: _isLoading ? null : _showImageSourceDialog,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
@@ -263,7 +430,8 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Ubah Foto'),
+                icon: const Icon(Icons.edit),
+                label: const Text('Ubah Foto'),
               ),
               const SizedBox(height: 32),
 
@@ -341,7 +509,6 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Dropdown Kategori - DYNAMIC dari Database
               _isLoadingKategori
                   ? Container(
                 padding: const EdgeInsets.all(16),
@@ -382,10 +549,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
                   ),
                 ),
                 items: _kategoriList.map((kategori) {
-                  // Ambil id_kategori sebagai value
                   final id = kategori['id_kategori'].toString();
-
-                  // Ambil nama kategori untuk display
                   final nama = kategori['nama_kategori'] ?? 'Tidak ada nama';
                   final kode = kategori['kode_kategori'] ?? '';
 

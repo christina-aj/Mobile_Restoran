@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 
-class TambahMenuScreen extends StatefulWidget {
+class EditMenuScreen extends StatefulWidget {
   final ApiService apiService;
+  final Map<String, dynamic> barangData;
 
-  const TambahMenuScreen({Key? key, required this.apiService}) : super(key: key);
+  const EditMenuScreen({
+    Key? key,
+    required this.apiService,
+    required this.barangData,
+  }) : super(key: key);
 
   @override
-  State<TambahMenuScreen> createState() => _TambahMenuScreenState();
+  State<EditMenuScreen> createState() => _EditMenuScreenState();
 }
 
-class _TambahMenuScreenState extends State<TambahMenuScreen> {
+class _EditMenuScreenState extends State<EditMenuScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _namaController = TextEditingController();
-  final _hargaController = TextEditingController();
-  final _deskripsiController = TextEditingController();
+  late final TextEditingController _namaController;
+  late final TextEditingController _hargaController;
+  late final TextEditingController _deskripsiController;
 
   String? _selectedKategori;
   bool _isLoading = false;
@@ -24,6 +29,24 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
   @override
   void initState() {
     super.initState();
+
+    _namaController = TextEditingController(
+        text: widget.barangData['nama_barang'] ?? ''
+    );
+    _hargaController = TextEditingController(
+        text: (widget.barangData['harga_default'] ?? 0).toString()
+    );
+    _deskripsiController = TextEditingController(
+        text: widget.barangData['deskripsi'] ?? ''
+    );
+
+    // Set kategori yang sudah ada
+    final kategoriId = widget.barangData['id_kategori'];
+    if (kategoriId != null) {
+      _selectedKategori = kategoriId.toString();
+    }
+
+    // Load kategori dari API
     _loadKategori();
   }
 
@@ -36,14 +59,12 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
   }
 
   Future<void> _loadKategori() async {
-    setState(() {
-      _isLoadingKategori = true;
-    });
-
     try {
-      print('Loading kategori...');
+      print('Loading kategori from API...');
       final data = await widget.apiService.getKategoriIndex();
+
       print('Kategori loaded: ${data.length} items');
+      print('Kategori data: $data');
 
       if (mounted) {
         setState(() {
@@ -58,18 +79,11 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
         setState(() {
           _isLoadingKategori = false;
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat kategori: $e'),
-            backgroundColor: Colors.orange,
-          ),
-        );
       }
     }
   }
 
-  Future<void> _handleTambahMenu() async {
+  Future<void> _handleUpdateMenu() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -79,6 +93,8 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
     });
 
     try {
+      final id = widget.barangData['id_barang'].toString();
+
       final data = {
         'nama_barang': _namaController.text.trim(),
         'harga_default': double.parse(_hargaController.text.trim()),
@@ -88,22 +104,22 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
         'id_kategori': _selectedKategori != null ? int.tryParse(_selectedKategori!) : null,
       };
 
-      print('Creating menu with data: $data');
+      print('Updating menu $id with data: $data');
 
-      await widget.apiService.createBarang(data);
+      await widget.apiService.updateBarang(id, data);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Menu berhasil ditambahkan'),
+          content: Text('Menu berhasil diupdate'),
           backgroundColor: Colors.green,
         ),
       );
 
       Navigator.pop(context, true);
     } catch (e) {
-      print('Error creating menu: $e');
+      print('Error updating menu: $e');
 
       if (!mounted) return;
 
@@ -114,7 +130,77 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gagal menambahkan menu: $errorMessage'),
+          content: Text('Gagal mengupdate menu: $errorMessage'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleDeleteMenu() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: Text('Yakin ingin menghapus "${widget.barangData['nama_barang']}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final id = widget.barangData['id_barang'].toString();
+
+      print('Deleting menu: $id');
+
+      await widget.apiService.deleteBarang(id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Menu berhasil dihapus'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      print('Error deleting menu: $e');
+
+      if (!mounted) return;
+
+      String errorMessage = e.toString();
+      if (errorMessage.contains('Exception:')) {
+        errorMessage = errorMessage.replaceAll('Exception:', '').trim();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menghapus menu: $errorMessage'),
           backgroundColor: Colors.red,
         ),
       );
@@ -139,7 +225,7 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Tambah Menu',
+          'Edit Menu',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
@@ -149,20 +235,19 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
           key: _formKey,
           child: Column(
             children: [
-              Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey.shade300, width: 2),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.no_photography_outlined,
-                    size: 60,
-                    color: Colors.grey.shade400,
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.restaurant, size: 60),
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 12),
               ElevatedButton(
@@ -178,7 +263,7 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Add Foto'),
+                child: const Text('Ubah Foto'),
               ),
               const SizedBox(height: 32),
 
@@ -188,8 +273,6 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.edit_outlined),
                   labelText: 'Nama Menu',
-                  hintText: 'Contoh: Bakso Campur',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -215,8 +298,6 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.payments_outlined),
                   labelText: 'Harga',
-                  hintText: 'Contoh: 15000',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -248,8 +329,6 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.description_outlined),
                   labelText: 'Deskripsi (Opsional)',
-                  hintText: 'Deskripsi menu...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -262,7 +341,7 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Dropdown Kategori Dynamic
+              // Dropdown Kategori - DYNAMIC dari Database
               _isLoadingKategori
                   ? Container(
                 padding: const EdgeInsets.all(16),
@@ -292,9 +371,7 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                 value: _selectedKategori,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.category_outlined),
-                  labelText: 'Kategori (Opsional)',
-                  hintText: 'Pilih Kategori',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  labelText: 'Kategori',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -304,29 +381,22 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
-                items: _kategoriList.isEmpty
-                    ? [
-                  DropdownMenuItem(
-                    value: null,
-                    child: Text(
-                      'Belum ada kategori',
-                      style: TextStyle(color: Colors.grey.shade400),
-                    ),
-                  )
-                ]
-                    : _kategoriList.map((kategori) {
+                items: _kategoriList.map((kategori) {
+                  // Ambil id_kategori sebagai value
                   final id = kategori['id_kategori'].toString();
+
+                  // Ambil nama kategori untuk display
                   final nama = kategori['nama_kategori'] ?? 'Tidak ada nama';
                   final kode = kategori['kode_kategori'] ?? '';
 
                   return DropdownMenuItem<String>(
                     value: id,
-                    child: Text('$nama${kode.isNotEmpty ? " ($kode)" : ""}'),
+                    child: Text(
+                      kode.isNotEmpty ? '$nama ($kode)' : nama,
+                    ),
                   );
                 }).toList(),
-                onChanged: _isLoading || _kategoriList.isEmpty
-                    ? null
-                    : (value) {
+                onChanged: _isLoading ? null : (value) {
                   setState(() {
                     _selectedKategori = value;
                   });
@@ -338,7 +408,7 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleTambahMenu,
+                  onPressed: _isLoading ? null : _handleUpdateMenu,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
@@ -356,7 +426,27 @@ class _TambahMenuScreenState extends State<TambahMenuScreen> {
                     ),
                   )
                       : const Text(
-                    'Tambah',
+                    'Edit Menu',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleDeleteMenu,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Hapus Menu',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),

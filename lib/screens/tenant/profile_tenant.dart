@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../bottom_navigation.dart';
+import '../login/login_screen.dart'; // Sesuaikan path ini dengan struktur project Anda
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileTenantScreen extends StatefulWidget {
@@ -14,20 +15,20 @@ class ProfileTenantScreen extends StatefulWidget {
 
 class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
   Map<String, dynamic>? _userInfo;
+  Map<String, dynamic>? _tenantInfo;
   bool _isLoading = true;
   String _errorMessage = '';
 
-  // Email pemilik aplikasi untuk bantuan
   static const String supportEmail = 'support@aplikasikasir.com';
   static const String supportPhone = '+6281234567890';
 
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
+    _loadData();
   }
 
-  Future<void> _loadUserInfo() async {
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -38,12 +39,28 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
       setState(() {
         _userInfo = userInfo;
-        _isLoading = false;
       });
 
       print('User info loaded: $userInfo');
+
+      if (userInfo['id_tenant'] != null) {
+        final tenantId = userInfo['id_tenant'].toString();
+        final tenantInfo = await widget.apiService.getTenantById(tenantId);
+
+        setState(() {
+          _tenantInfo = tenantInfo;
+          _isLoading = false;
+        });
+
+        print('Tenant info loaded: $tenantInfo');
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'ID Tenant tidak ditemukan';
+        });
+      }
     } catch (e) {
-      print('Error loading user info: $e');
+      print('Error loading data: $e');
 
       setState(() {
         _isLoading = false;
@@ -84,18 +101,14 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
       if (!mounted) return;
 
-      // Navigate to login screen and clear all routes
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
+      // Gunakan MaterialPageRoute (BUKAN named route)
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(),
+        ),
             (route) => false,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logout berhasil'),
-          backgroundColor: Colors.green,
-        ),
-      );
     } catch (e) {
       print('Error during logout: $e');
 
@@ -103,8 +116,9 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          content: Text('Error logout: ${e.toString().replaceAll('Exception:', '').trim()}'),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -232,7 +246,7 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _loadUserInfo,
+                onPressed: _loadData,
                 child: const Text('Coba Lagi'),
               ),
             ],
@@ -268,17 +282,19 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Nama Toko
+              // Nama Tenant
               Text(
-                _userInfo?['nama'] ?? _userInfo?['name'] ?? 'N/A',
+                _tenantInfo?['nama_tenant'] ?? 'N/A',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 4),
+
+              // Kode Tenant
               Text(
-                (_userInfo?['role'] ?? 'N/A').toString().toUpperCase(),
+                _tenantInfo?['kode_tenant'] ?? 'N/A',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
@@ -287,7 +303,7 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
               const SizedBox(height: 32),
 
-              // User Info Card
+              // Tenant Info Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -299,15 +315,15 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildInfoRow(
-                      icon: Icons.email_outlined,
-                      label: 'Email',
-                      value: _userInfo?['email'] ?? 'N/A',
+                      icon: Icons.location_on_outlined,
+                      label: 'Lokasi',
+                      value: _tenantInfo?['lokasi'] ?? 'N/A',
                     ),
-                    const Divider(height: 24),
+                    const SizedBox(height: 16),
                     _buildInfoRow(
-                      icon: Icons.store_outlined,
-                      label: 'ID Tenant',
-                      value: _userInfo?['id_tenant']?.toString() ?? 'N/A',
+                      icon: Icons.phone_outlined,
+                      label: 'No Telepon Resto',
+                      value: _tenantInfo?['notelp'] ?? 'N/A',
                     ),
                   ],
                 ),
@@ -315,37 +331,54 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
               const SizedBox(height: 24),
 
-              // Riwayat / History
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Fitur riwayat belum tersedia'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300),
-                    ),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.history, color: Colors.grey),
-                      SizedBox(width: 12),
-                      Text(
-                        'Riwayat / History',
-                        style: TextStyle(fontSize: 16),
+              // User Info Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Informasi User',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade900,
                       ),
-                      Spacer(),
-                      Icon(Icons.chevron_right, color: Colors.grey),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInfoRow(
+                      icon: Icons.person_outline,
+                      label: 'Nama',
+                      value: _userInfo?['nama'] ?? _userInfo?['name'] ?? 'N/A',
+                    ),
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: _userInfo?['email'] ?? 'N/A',
+                    ),
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      icon: Icons.badge_outlined,
+                      label: 'Role',
+                      value: (_userInfo?['role'] ?? 'N/A').toString().toUpperCase(),
+                    ),
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      icon: Icons.phone_outlined,
+                      label: 'No Telepon',
+                      value: _userInfo?['notelfon'] ?? 'N/A',
+                    ),
+                  ],
                 ),
               ),
+
+              const SizedBox(height: 24),
 
               // Bantuan
               InkWell(
@@ -396,6 +429,8 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),

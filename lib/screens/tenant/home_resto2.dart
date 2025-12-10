@@ -406,14 +406,14 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Memuat data...'),
-                      ],
-                    ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Memuat data...'),
+                  ],
+                ),
               )
                   : _errorMessage.isNotEmpty
                   ? Center(
@@ -457,191 +457,200 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
               )
                   : _filteredBarang.isEmpty
                   ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _searchController.text.isNotEmpty
-                              ? Icons.search_off
-                              : Icons.restaurant_menu,
-                          size: 80,
-                          color: Colors.grey.shade300,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _searchController.text.isNotEmpty
+                          ? Icons.search_off
+                          : Icons.restaurant_menu,
+                      size: 80,
+                      color: Colors.grey.shade300,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _searchController.text.isNotEmpty
+                          ? 'Menu tidak ditemukan'
+                          : 'Belum ada menu',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    if (_searchController.text.isEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tap tombol "Menu" untuk mulai',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchController.text.isNotEmpty
-                              ? 'Menu tidak ditemukan'
-                              : 'Belum ada menu',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        if (_searchController.text.isEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap tombol "Menu" untuk mulai',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
-                            ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+                  : RefreshIndicator(
+                onRefresh: _loadBarang,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _filteredBarang.length,
+                  itemBuilder: (context, index) {
+                    final barang = _filteredBarang[index];
+
+                    final id = barang['id_barang']?.toString() ?? '';
+                    final namaBarang = barang['nama_barang'] ?? 'Tidak ada nama';
+                    final harga = barang['harga_default'] ?? 0;
+                    final stok = barang['stok'] ?? 0;
+                    final kategori = barang['kategori'] ?? '';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade100,
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
                         ],
-                      ],
-                    ),
-                  )
-                  : RefreshIndicator(
-                    onRefresh: _loadBarang,
-                      child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _filteredBarang.length,
-                      itemBuilder: (context, index) {
-                        final barang = _filteredBarang[index];
-
-                        final id = barang['id_barang']?.toString() ?? '';
-                        final namaBarang = barang['nama_barang'] ?? 'Tidak ada nama';
-                        final harga = barang['harga_default'] ?? 0;
-                        final kategori = barang['kategori'] ?? '';
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.shade100,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: barang['foto'] != null && barang['foto'] != ''
-                                      ? Image.network(
-                                        barang['foto'],
-                                        width: 60,
-                                        height: 60,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            width: 60,
-                                            height: 60,
-                                            color: Colors.grey.shade300,
-                                            child: Icon(Icons.broken_image, color: Colors.grey.shade700),
-                                          );
-                                        },
-                                      )
-                                      : Container(
-                                        width: 60,
-                                        height: 60,
-                                        color: Colors.grey.shade300,
-                                        child: Icon(Icons.restaurant, color: Colors.grey.shade700),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 12),
-
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        namaBarang,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _formatRupiah(harga),
-                                        style: const TextStyle(
-                                          color: Colors.blue,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      if (kategori.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 2),
-                                          child: Text(
-                                            kategori,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.blue.shade300,
+                                      Colors.blue.shade600,
                                     ],
                                   ),
                                 ),
-
-                                // TOMBOL EDIT & DELETE
-                                Column(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => EditMenuScreen(
-                                              apiService: widget.apiService,
-                                              barangData: barang,
-                                            ),
-                                          ),
-                                        );
-
-                                        if (result == true) {
-                                          _loadBarang();
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 18,
-                                          vertical: 6,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text('Edit'),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    ElevatedButton(
-                                      onPressed: () => _deleteBarang(id, namaBarang),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 18,
-                                          vertical: 6,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text('Hapus'),
-                                    ),
-
-                                  ],
+                                child: const Icon(
+                                  Icons.restaurant,
+                                  size: 30,
+                                  color: Colors.white,
                                 ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    namaBarang,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formatRupiah(harga),
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (kategori.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        kategori,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      'Stok: $stok',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: stok > 0
+                                            ? Colors.green.shade700
+                                            : Colors.red.shade700,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // TOMBOL EDIT & DELETE
+                            Column(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditMenuScreen(
+                                          apiService: widget.apiService,
+                                          barangData: barang,
+                                        ),
+                                      ),
+                                    );
+
+                                    if (result == true) {
+                                      _loadBarang();
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 6,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('Edit'),
+                                ),
+                                const SizedBox(height: 4),
+                                ElevatedButton(
+                                  onPressed: () => _deleteBarang(id, namaBarang),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 6,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('Hapus'),
+                                ),
+
                               ],
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
