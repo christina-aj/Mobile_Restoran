@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../bottom_navigation.dart';
 import '../auth/login_screen.dart';
+import 'edit_tenant.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileTenantScreen extends StatefulWidget {
@@ -74,6 +75,26 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
     }
   }
 
+  // TAMBAH METHOD INI untuk handle edit tenant
+  Future<void> _handleEditTenant() async {
+    if (_tenantInfo == null) return;
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditTenantScreen(
+          apiService: widget.apiService,
+          tenantInfo: _tenantInfo!,
+        ),
+      ),
+    );
+
+    // Reload data jika berhasil update
+    if (result == true) {
+      _loadData();
+    }
+  }
+
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -101,14 +122,12 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
 
       if (!mounted) return;
 
-      // Gunakan MaterialPageRoute (BUKAN named route)
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => LoginScreen(),
         ),
             (route) => false,
       );
-
     } catch (e) {
       print('Error during logout: $e');
 
@@ -368,17 +387,36 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                       label: 'Role',
                       value: (_userInfo?['role'] ?? '-').toString().toUpperCase(),
                     ),
-                    // const Divider(height: 24),
-                    // _buildInfoRow(
-                    //   icon: Icons.phone_outlined,
-                    //   label: 'No Telepon',
-                    //   value: _userInfo?['notelfon'] ?? '-',
-                    // ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 24),
+
+              // TAMBAH BUTTON EDIT DATA TOKO DI SINI
+              InkWell(
+                onTap: _handleEditTenant,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.edit_outlined, color: Colors.blue),
+                      SizedBox(width: 12),
+                      Text(
+                        'Edit Data Toko',
+                        style: TextStyle(fontSize: 16, color: Colors.blue),
+                      ),
+                      Spacer(),
+                      Icon(Icons.chevron_right, color: Colors.blue),
+                    ],
+                  ),
+                ),
+              ),
 
               // Bantuan
               InkWell(

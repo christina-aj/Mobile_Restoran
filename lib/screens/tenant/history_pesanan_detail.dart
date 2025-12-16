@@ -37,19 +37,28 @@ class _HistoryPesananDetailState extends State<HistoryPesananDetail> {
       final idTransaksi = widget.order['id_transaksi'].toString();
       print('Loading detail for transaksi: $idTransaksi');
 
-      // Panggil API untuk mendapatkan detail transaksi
       final response = await widget.apiService.getTransaksiById(idTransaksi);
-
       print('Detail transaksi response: $response');
 
-      // Ekstrak detail items dari response
-      final details = response['details'] ?? [];
+      // ambil dari struktur API
+      final transaksiList = response['transaksi'] ?? [];
 
-      if (mounted) {
-        setState(() {
-          _detailItems = details;
-          _isLoading = false;
-        });
+      if (transaksiList.isNotEmpty) {
+        final detailItems = transaksiList[0]['detail_transaksi'] ?? [];
+
+        if (mounted) {
+          setState(() {
+            _detailItems = detailItems;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _detailItems = [];
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       print('Error loading detail transaksi: $e');

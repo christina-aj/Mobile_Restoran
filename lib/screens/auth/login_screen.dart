@@ -274,31 +274,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: _isLoading ? null : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Fitur reset password belum tersedia'),
-                        ),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'Lupa Password? Reset Sekarang',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ),
+                // // Forgot Password
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: TextButton(
+                //     onPressed: _isLoading ? null : () {
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         const SnackBar(
+                //           content: Text('Fitur reset password belum tersedia'),
+                //         ),
+                //       );
+                //     },
+                //     style: TextButton.styleFrom(
+                //       padding: EdgeInsets.zero,
+                //       minimumSize: const Size(0, 0),
+                //       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                //     ),
+                //     child: const Text(
+                //       'Lupa Password? Reset Sekarang',
+                //       style: TextStyle(
+                //         fontSize: 13,
+                //         color: Colors.blue,
+                //       ),
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 24),
 
                 // Login Button

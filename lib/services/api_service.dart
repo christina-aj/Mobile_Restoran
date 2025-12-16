@@ -73,14 +73,7 @@ class ApiService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
-        final token = data['token'] ?? data['access_token'];
-
-        if (token != null) {
-          await setToken(token);
-          print('Login success - Token saved');
-        } else {
-          print('Warning: No token in response');
-        }
+        await setToken(data['access_token']);
         return data;
       }
       throw Exception('Login gagal: ${response.body}');
@@ -185,6 +178,59 @@ class ApiService {
       throw Exception('Gagal load tenant info: ${response.statusCode}');
     } catch (e) {
       print('Get tenant info error: $e');
+      rethrow;
+    }
+  }
+
+  // ===== UPDATE TENANT =====
+  Future<Map<String, dynamic>> updateTenant(String tenantId, Map<String, dynamic> data) async {
+    await _ensureInitialized();
+
+    try {
+      print('Updating tenant ID: $tenantId with data: $data');
+
+      if (_token == null || _token!.isEmpty) {
+        throw Exception('Token tidak tersedia. Silakan login kembali.');
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/tenant/update/$tenantId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode(data),
+      );
+
+      print('Update Tenant Status: ${response.statusCode}');
+      print('Update Tenant Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        return jsonResponse['data'];
+      }
+
+      if (response.statusCode == 401) {
+        await clearToken();
+        throw Exception('Token expired. Silakan login kembali.');
+      }
+
+      if (response.statusCode == 422) {
+        final jsonResponse = json.decode(response.body);
+        final errors = jsonResponse['errors'] as Map<String, dynamic>?;
+
+        if (errors != null) {
+          final firstError = errors.values.first;
+          final errorMessage = firstError is List ? firstError.first : firstError.toString();
+          throw Exception(errorMessage);
+        }
+
+        throw Exception('Validasi gagal');
+      }
+
+      throw Exception('Gagal update tenant: ${response.statusCode}');
+    } catch (e) {
+      print('Update tenant error: $e');
       rethrow;
     }
   }
