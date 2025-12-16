@@ -6,6 +6,8 @@ class CartItem {
   final String namaBarang;
   final int harga;
   final String? kategori;
+  final String? foto;
+  final String? deskripsi;
   int quantity;
 
   CartItem({
@@ -13,6 +15,8 @@ class CartItem {
     required this.namaBarang,
     required this.harga,
     this.kategori,
+    this.foto,
+    this.deskripsi,
     this.quantity = 1,
   });
 
@@ -26,6 +30,7 @@ class CartItem {
       'nama_barang': namaBarang,
       'harga_default': harga,
       'quantity': quantity,
+      'deskripsi': deskripsi ?? '-',
     };
   }
 }
@@ -71,8 +76,10 @@ class CartProvider extends ChangeNotifier {
     required String namaBarang,
     required int harga,
     String? kategori,
+    String? foto,
+    String? deskripsi,
   }) {
-    print('🛒 CartProvider: Adding item - $namaBarang (ID: $idBarang)');
+    print('CartProvider: Adding item - $namaBarang (ID: $idBarang)');
 
     // Cek apakah item sudah ada
     final existingIndex = _items.indexWhere((item) => item.idBarang == idBarang);
@@ -80,7 +87,7 @@ class CartProvider extends ChangeNotifier {
     if (existingIndex >= 0) {
       // Jika sudah ada, tambah quantity
       _items[existingIndex].quantity++;
-      print('🛒 CartProvider: Item exists, increased quantity to ${_items[existingIndex].quantity}');
+      print('CartProvider: Item exists, increased quantity to ${_items[existingIndex].quantity}');
     } else {
       // Jika belum ada, tambah item baru
       _items.add(CartItem(
@@ -88,92 +95,94 @@ class CartProvider extends ChangeNotifier {
         namaBarang: namaBarang,
         harga: harga,
         kategori: kategori,
+        foto: foto,
+        deskripsi: deskripsi,
         quantity: 1,
       ));
-      print('🛒 CartProvider: New item added with quantity 1');
+      print('CartProvider: New item added with quantity 1');
     }
 
-    print('🛒 CartProvider: Total items in cart: ${_items.length}');
+    print('CartProvider: Total items in cart: ${_items.length}');
     notifyListeners();
-    print('🔔 CartProvider: notifyListeners() called');
+    print('CartProvider: notifyListeners() called');
   }
 
   // Update quantity item
   void updateQuantity(String idBarang, int quantity) {
-    print('🛒 CartProvider: Updating quantity for $idBarang to $quantity');
+    print('CartProvider: Updating quantity for $idBarang to $quantity');
 
     final index = _items.indexWhere((item) => item.idBarang == idBarang);
     if (index >= 0) {
       if (quantity > 0) {
         _items[index].quantity = quantity;
-        print('🛒 CartProvider: Quantity updated to $quantity');
+        print('CartProvider: Quantity updated to $quantity');
       } else {
         // Jika quantity 0, hapus item
         final removedItem = _items[index].namaBarang;
         _items.removeAt(index);
-        print('🛒 CartProvider: Item $removedItem removed (quantity 0)');
+        print('CartProvider: Item $removedItem removed (quantity 0)');
       }
       notifyListeners();
-      print('🔔 CartProvider: notifyListeners() called');
+      print('CartProvider: notifyListeners() called');
     } else {
-      print('🛒 CartProvider: Item not found in cart');
+      print('CartProvider: Item not found in cart');
     }
   }
 
   // Increment quantity
   void incrementQuantity(String idBarang) {
-    print('🛒 CartProvider: Incrementing quantity for $idBarang');
+    print('CartProvider: Incrementing quantity for $idBarang');
 
     final index = _items.indexWhere((item) => item.idBarang == idBarang);
     if (index >= 0) {
       _items[index].quantity++;
-      print('🛒 CartProvider: Quantity increased to ${_items[index].quantity}');
+      print('CartProvider: Quantity increased to ${_items[index].quantity}');
       notifyListeners();
-      print('🔔 CartProvider: notifyListeners() called');
+      print('CartProvider: notifyListeners() called');
     } else {
-      print('🛒 CartProvider: Item not found for increment');
+      print('CartProvider: Item not found for increment');
     }
   }
 
   // Decrement quantity
   void decrementQuantity(String idBarang) {
-    print('🛒 CartProvider: Decrementing quantity for $idBarang');
+    print('CartProvider: Decrementing quantity for $idBarang');
 
     final index = _items.indexWhere((item) => item.idBarang == idBarang);
     if (index >= 0) {
       final currentQty = _items[index].quantity;
       if (currentQty > 1) {
         _items[index].quantity--;
-        print('🛒 CartProvider: Quantity decreased to ${_items[index].quantity}');
+        print('CartProvider: Quantity decreased to ${_items[index].quantity}');
       } else {
         // Jika quantity jadi 0, hapus item
         final removedItem = _items[index].namaBarang;
         _items.removeAt(index);
-        print('🛒 CartProvider: Item $removedItem removed (quantity became 0)');
+        print('CartProvider: Item $removedItem removed (quantity became 0)');
       }
       notifyListeners();
-      print('🔔 CartProvider: notifyListeners() called');
+      print('CartProvider: notifyListeners() called');
     } else {
-      print('🛒 CartProvider: Item not found for decrement');
+      print('CartProvider: Item not found for decrement');
     }
   }
 
   // Hapus item dari cart
   void removeItem(String idBarang) {
-    print('🛒 CartProvider: Removing item $idBarang');
+    print('CartProvider: Removing item $idBarang');
     final sizeBefore = _items.length;
     _items.removeWhere((item) => item.idBarang == idBarang);
-    print('🛒 CartProvider: Items removed: ${sizeBefore - _items.length}');
+    print('CartProvider: Items removed: ${sizeBefore - _items.length}');
     notifyListeners();
-    print('🔔 CartProvider: notifyListeners() called');
+    print('CartProvider: notifyListeners() called');
   }
 
   // Clear semua cart
   void clearCart() {
-    print('🛒 CartProvider: Clearing all cart items');
+    print('CartProvider: Clearing all cart items');
     _items.clear();
     notifyListeners();
-    print('🔔 CartProvider: notifyListeners() called');
+    print('CartProvider: notifyListeners() called');
   }
 
   // Get cart items untuk dikirim ke API
@@ -183,7 +192,7 @@ class CartProvider extends ChangeNotifier {
 
   // Debug: Print semua items di cart
   void printCart() {
-    print('=== 🛒 CART DEBUG ===');
+    print('=== CART DEBUG ===');
     print('Total items: ${_items.length}');
     for (var item in _items) {
       print('- ${item.namaBarang} (ID: ${item.idBarang}): ${item.quantity}x @ Rp${item.harga}');

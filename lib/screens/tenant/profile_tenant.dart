@@ -322,7 +322,7 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       icon: Icons.phone_outlined,
-                      label: 'No Telepon Resto',
+                      label: 'No Telepon',
                       value: _tenantInfo?['notelp'] ?? '-',
                     ),
                   ],
@@ -368,12 +368,12 @@ class _ProfileTenantScreenState extends State<ProfileTenantScreen> {
                       label: 'Role',
                       value: (_userInfo?['role'] ?? '-').toString().toUpperCase(),
                     ),
-                    const Divider(height: 24),
-                    _buildInfoRow(
-                      icon: Icons.phone_outlined,
-                      label: 'No Telepon',
-                      value: _userInfo?['notelfon'] ?? '-',
-                    ),
+                    // const Divider(height: 24),
+                    // _buildInfoRow(
+                    //   icon: Icons.phone_outlined,
+                    //   label: 'No Telepon',
+                    //   value: _userInfo?['notelfon'] ?? '-',
+                    // ),
                   ],
                 ),
               ),

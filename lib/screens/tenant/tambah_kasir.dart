@@ -22,23 +22,18 @@ class _TambahKasirScreenState extends State<TambahKasirScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true; // TAMBAH INI
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _namaController.dispose();
     _teleponController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose(); // TAMBAH INI
+    _confirmPasswordController.dispose();
     _emailController.dispose();
     super.dispose();
   }
 
-  String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
 
   Future<void> _handleTambahKasir() async {
     if (!_formKey.currentState!.validate()) {
@@ -50,16 +45,15 @@ class _TambahKasirScreenState extends State<TambahKasirScreen> {
     });
 
     try {
-      final hashedPassword = _hashPassword(_passwordController.text.trim());
 
       final data = {
         'nama': _namaController.text.trim(),
         'email': _emailController.text.trim(),
-        'notelpon': _teleponController.text.trim().isEmpty
+        'notelfon': _teleponController.text.trim().isEmpty
             ? null
             : _teleponController.text.trim(),
-        'password': hashedPassword,
-        'password_confirmation': hashedPassword, // TAMBAH INI - Kirim hash yang sama
+        'password': _passwordController.text.trim(),
+        'password_confirmation': _confirmPasswordController.text.trim(),
         'role': 'kasir',
       };
 

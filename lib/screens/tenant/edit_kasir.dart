@@ -54,12 +54,6 @@ class _EditKasirScreenState extends State<EditKasirScreen> {
     super.dispose();
   }
 
-  String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
-
   Future<void> _handleEditKasir() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -88,9 +82,8 @@ class _EditKasirScreenState extends State<EditKasirScreen> {
 
       // Hanya kirim password jika user ingin mengubahnya
       if (_changePassword && _passwordController.text.isNotEmpty) {
-        final hashedPassword = _hashPassword(_passwordController.text.trim());
-        data['password'] = hashedPassword;
-        data['password_confirmation'] = hashedPassword;
+        data['password'] = _passwordController.text.trim();
+        data['password_confirmation'] = _confirmPasswordController.text.trim();
       }
 
       print('Updating kasir $userId with data: $data');

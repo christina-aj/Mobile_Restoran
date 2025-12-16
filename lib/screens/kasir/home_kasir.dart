@@ -388,7 +388,7 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
                 ],
               ),
             )
-                : ListView.builder(
+            :ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: _filteredBarang.length,
@@ -396,12 +396,13 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
                 final barang = _filteredBarang[index];
                 final idBarang = barang['id_barang']?.toString() ?? '';
                 final namaBarang = barang['nama_barang'] ?? 'Tidak ada nama';
-                // final harga = barang['harga_default'] ?? 0;
                 final hargaRaw = barang['harga_default'] ?? 0;
                 final harga = (hargaRaw is int)
                     ? hargaRaw
                     : (double.tryParse(hargaRaw.toString())?.toInt() ?? 0);
                 final kategori = barang['kategori'] ?? '';
+                final foto = barang['foto'];
+                final deskripsi = barang['deskripsi'] ?? '-';
 
                 return Card(
                   key: ValueKey('item_$idBarang'),
@@ -417,27 +418,40 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
                       children: [
                         Row(
                           children: [
+                            // FOTO MENU
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.blue.shade300,
-                                      Colors.blue.shade600,
-                                    ],
+                              child: barang['foto'] != null && barang['foto'] != ''
+                                  ? Image.network(
+                                    barang['foto'],
+                                    width: 70,
+                                    height: 70,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 70,
+                                        height: 70,
+                                        color: Colors.grey.shade300,
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                  : Container(
+                                    width: 70,
+                                    height: 70,
+                                    color: Colors.grey.shade300,
+                                    child: Icon(
+                                      Icons.restaurant,
+                                      color: Colors.grey.shade700,
+                                    ),
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.restaurant,
-                                  size: 35,
-                                  color: Colors.white,
-                                ),
-                              ),
                             ),
                             const SizedBox(width: 12),
+
+                            // INFO MENU
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,6 +474,17 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
                                       fontSize: 14,
                                     ),
                                   ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    deskripsi,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   if (kategori.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 2),
@@ -477,18 +502,21 @@ class _HomeKasirScreenState extends State<HomeKasirScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
+
+                        // TOMBOL QUANTITY
                         _QuantityButtonRow(
                           idBarang: idBarang,
                           namaBarang: namaBarang,
                           harga: harga,
                           kategori: kategori,
+                          foto: foto,
                         ),
                       ],
                     ),
                   ),
                 );
               },
-            ),
+            )
           ),
         ],
       ),
@@ -505,12 +533,16 @@ class _QuantityButtonRow extends StatefulWidget {
   final String namaBarang;
   final int harga;
   final String? kategori;
+  final String? foto;
+  final String? deskripsi;
 
   const _QuantityButtonRow({
     required this.idBarang,
     required this.namaBarang,
     required this.harga,
     this.kategori,
+    this.foto,
+    this.deskripsi,
   });
 
   @override
@@ -536,6 +568,8 @@ class _QuantityButtonRowState extends State<_QuantityButtonRow> {
         namaBarang: widget.namaBarang,
         harga: widget.harga,
         kategori: widget.kategori,
+        foto: widget.foto,
+        deskripsi: widget.deskripsi,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

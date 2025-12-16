@@ -381,7 +381,7 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Cari Nama Menu atau Kategori',
+                  hintText: 'Cari Nama Menu',
                   hintStyle: TextStyle(color: Colors.grey.shade400),
                   prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
                   suffixIcon: _searchController.text.isNotEmpty
@@ -502,6 +502,7 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
                         final namaBarang = barang['nama_barang'] ?? 'Tidak ada nama';
                         final harga = barang['harga_default'] ?? 0;
                         final kategori = barang['kategori'] ?? '';
+                        final deskripsi = barang['deskripsi'] ?? '-';
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -567,8 +568,19 @@ class _HomeRestoScreenState extends State<HomeRestoScreen> {
                                         style: const TextStyle(
                                           color: Colors.blue,
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                          fontSize: 15,
                                         ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        deskripsi,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       if (kategori.isNotEmpty)
                                         Padding(

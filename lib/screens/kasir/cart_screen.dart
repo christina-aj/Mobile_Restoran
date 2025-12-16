@@ -40,7 +40,6 @@ class _CartScreenState extends State<CartScreen> {
     });
 
     try {
-      // Siapkan data untuk API Transaksi
       final transaksiData = {
         'catatan': _notesController.text.trim().isEmpty
             ? null
@@ -59,34 +58,27 @@ class _CartScreenState extends State<CartScreen> {
 
       print('Creating transaksi: $transaksiData');
 
-      // Panggil API create transaksi
       final response = await widget.apiService.createTransaksi(transaksiData);
 
       print('Full Transaksi response: $response');
 
-      // Jika sukses, clear cart dan kembali
       if (mounted) {
-        // Extract kode transaksi dari berbagai kemungkinan struktur response
         String kodeTransaksi = '-';
 
         try {
-          // Coba ambil dari data.transaksi.kode_transaksi
           if (response['data'] != null &&
               response['data']['transaksi'] != null &&
               response['data']['transaksi']['kode_transaksi'] != null) {
             kodeTransaksi = response['data']['transaksi']['kode_transaksi'].toString();
           }
-          // Coba ambil dari data.kode_transaksi
           else if (response['data'] != null &&
               response['data']['kode_transaksi'] != null) {
             kodeTransaksi = response['data']['kode_transaksi'].toString();
           }
-          // Coba ambil dari transaksi.kode_transaksi
           else if (response['transaksi'] != null &&
               response['transaksi']['kode_transaksi'] != null) {
             kodeTransaksi = response['transaksi']['kode_transaksi'].toString();
           }
-          // Coba ambil dari kode_transaksi langsung
           else if (response['kode_transaksi'] != null) {
             kodeTransaksi = response['kode_transaksi'].toString();
           }
@@ -96,23 +88,19 @@ class _CartScreenState extends State<CartScreen> {
           print('Error extracting kode_transaksi: $e');
         }
 
-        // Clear cart dulu sebelum navigasi
         cartProvider.clearCart();
         _notesController.clear();
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Pesanan berhasil dibuat!\nKode: $kodeTransaksi'),
+            content: Text('Pesanan berhasil dibuat!\nKode: $kodeTransaksi'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
         );
 
-        // Wait a bit untuk snackbar muncul, baru navigate
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // Kembali ke home
         if (mounted) {
           Navigator.pop(context);
         }
@@ -128,7 +116,7 @@ class _CartScreenState extends State<CartScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Gagal membuat pesanan\n${e.toString().replaceAll('Exception: ', '')}'),
+            content: Text('Gagal membuat pesanan\n${e.toString().replaceAll('Exception: ', '')}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
           ),
@@ -217,24 +205,34 @@ class _CartScreenState extends State<CartScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        // Image
+                        // Image - UPDATED
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Container(
+                          child: item.foto != null && item.foto!.isNotEmpty
+                              ? Image.network(
+                            item.foto!,
                             width: 70,
                             height: 70,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.blue.shade300,
-                                  Colors.blue.shade600,
-                                ],
-                              ),
-                            ),
-                            child: const Icon(
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 70,
+                                height: 70,
+                                color: Colors.grey.shade300,
+                                child: Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey.shade700,
+                                ),
+                              );
+                            },
+                          )
+                              : Container(
+                            width: 70,
+                            height: 70,
+                            color: Colors.grey.shade300,
+                            child: Icon(
                               Icons.restaurant,
-                              size: 35,
-                              color: Colors.white,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ),
@@ -261,6 +259,29 @@ class _CartScreenState extends State<CartScreen> {
                                   fontSize: 14,
                                 ),
                               ),
+                              if (item.deskripsi != null && item.deskripsi!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.deskripsi!,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              if (item.kategori != null && item.kategori!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    item.kategori!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

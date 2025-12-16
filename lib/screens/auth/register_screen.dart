@@ -67,6 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'nama_tenant': _namaTenantController.text.trim(),
         'lokasi': _lokasiController.text.trim(),
         'notelp': _notelpController.text.trim(),
+        'notelfon': _notelpController.text.trim(), // untuk master user
       };
 
       print('Register data: $registerData');
