@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.1.250:8000/api/v1';
+  // static const String baseUrl = 'http://192.168.1.250:8000/api/v1';
+  static const String baseUrl = 'http://127.0.0.1:8000/api/v1';
 
   String? _token;
   bool _isInitialized = false;
@@ -64,22 +65,28 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: json.encode({'email': email, 'password': password}),
       );
 
       print('Login Response Status: ${response.statusCode}');
-      print('Login Response Body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
+        // Pastikan key-nya sesuai dengan yang dikirim Laravel (misal: 'token' atau 'access_token')
         await setToken(data['access_token']);
         return data;
+      } else {
+        // Ini akan membantu Anda melihat error asli dari Laravel (misal: password salah)
+        print('Login Error Body: ${response.body}');
+        throw Exception('Login gagal: ${response.statusCode}');
       }
-      throw Exception('Login gagal: ${response.body}');
     } catch (e) {
       print('Login error: $e');
-      throw Exception('Login gagal: $e');
+      throw Exception('Koneksi Gagal: Periksa CORS atau URL API Anda');
     }
   }
 
